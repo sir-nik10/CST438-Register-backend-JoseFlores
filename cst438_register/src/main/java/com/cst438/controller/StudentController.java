@@ -84,9 +84,4 @@ public class StudentController {
 			System.out.println(student_email+" student hold has been relased.");
 		}
 	}
-	
-	
-	
-	
-
 }
