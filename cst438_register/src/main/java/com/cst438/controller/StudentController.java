@@ -34,19 +34,21 @@ public class StudentController {
 	StudentRepository studentRepository;
 	
 	
+	//adds a new student to the system if email does not already exist
 	@PostMapping("/student")
 	public void addStudent( @RequestParam("name") String student_name, @RequestParam("email") String student_email){
 		
 		Student email = studentRepository.findByEmail(student_email);
 		if(email != null){
-			System.out.println("/student already exists in system."+student_email);
-			//throw new ResponseStatusException( HttpStatus.BAD_REQUEST, "Student already exists " );
+			System.out.println(student_email+" already exists in system.");
+			throw new ResponseStatusException( HttpStatus.BAD_REQUEST, student_email+ " already exists in system" );
 		}
 		else {
 			Student student = new Student();
 			student.setEmail(student_email);
 			student.setName(student_name);
 			Student savedStudent = studentRepository.save(student);
+			System.out.println("Student successfullya added.");
 		}
 	}
 	
@@ -57,6 +59,7 @@ public class StudentController {
 		
 		if(currentStudent==null) {
 			System.out.println("Student does not exist in system. Could not complete status change.");
+			throw new ResponseStatusException( HttpStatus.BAD_REQUEST, "Student does not exist in system. Could not complete status change." );
 		}
 		else {
 			currentStudent.setStatus(student_status);
@@ -73,9 +76,11 @@ public class StudentController {
 		
 		if(currentStudent==null) {
 			System.out.println("Student does not exist in system. Could not complete status change.");
+			throw new ResponseStatusException( HttpStatus.BAD_REQUEST, "Student does not exist in system. Could not complete status change. " );
 		}
 		else if(currentStudent.getStatus()==null) {
 			System.out.println("Student does not have a hold currently. Could not complete status change.");
+			throw new ResponseStatusException( HttpStatus.BAD_REQUEST, "Student does not have a hold currently. Could not complete status change." );
 		}
 		else {
 			currentStudent.setStatus(null);
