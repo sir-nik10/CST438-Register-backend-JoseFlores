@@ -208,8 +208,27 @@ class JunitTestStudentController {
 		//should not return success 
 		assertNotEquals(200, response.getStatus());
 		
+		//CASE 3: Student DNE 
+		
+		Student studentdne = null;
+	    
+		given(studentRepository.findByEmail("dne@csumb.edu")).willReturn(studentdne);
+
+		response = mvc.perform(
+				MockMvcRequestBuilders
+			      .put("/student/removehold?email="+"dne@csumb.edu")
+			      .contentType(MediaType.APPLICATION_JSON)
+			      .accept(MediaType.APPLICATION_JSON))
+				.andReturn().getResponse();
+		
+		//should return fail error 400
+		assertEquals(400, response.getStatus());
+				
+		//should not return success 
+		assertNotEquals(200, response.getStatus());
+				
+		
 	}
 	
-	//CASE 3: Student DNE 
-
+	
 }
