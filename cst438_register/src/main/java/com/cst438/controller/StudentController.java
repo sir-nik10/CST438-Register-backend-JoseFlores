@@ -36,7 +36,10 @@ public class StudentController {
 	
 	//adds a new student to the system if email does not already exist
 	@PostMapping("/student")
-	public void addStudent( @RequestParam("name") String student_name, @RequestParam("email") String student_email){
+	public Student addStudent( @RequestBody Student st){
+		
+		String student_email = st.getEmail();
+		String student_name = st.getName();
 		
 		Student email = studentRepository.findByEmail(student_email);
 		if(email != null){
@@ -48,7 +51,8 @@ public class StudentController {
 			student.setEmail(student_email);
 			student.setName(student_name);
 			Student savedStudent = studentRepository.save(student);
-			System.out.println("Student successfullya added.");
+			System.out.println("Student successfully added.");
+			return savedStudent;
 		}
 	}
 	
