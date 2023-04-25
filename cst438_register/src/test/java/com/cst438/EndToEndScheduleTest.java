@@ -12,6 +12,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -19,6 +20,8 @@ import com.cst438.domain.Course;
 import com.cst438.domain.CourseRepository;
 import com.cst438.domain.Enrollment;
 import com.cst438.domain.EnrollmentRepository;
+import com.cst438.domain.Student;
+import com.cst438.domain.StudentRepository;
 
 /*
  * This example shows how to use selenium testing using the web driver 
@@ -38,7 +41,7 @@ import com.cst438.domain.EnrollmentRepository;
 @SpringBootTest
 public class EndToEndScheduleTest {
 
-	public static final String CHROME_DRIVER_FILE_LOCATION = "C:/chromedriver_win32/chromedriver.exe";
+	public static final String CHROME_DRIVER_FILE_LOCATION = "/Users/nickflores/chromedriver_mac64/chromedriver";
 
 	public static final String URL = "http://localhost:3000";
 
@@ -49,6 +52,14 @@ public class EndToEndScheduleTest {
 	public static final String TEST_SEMESTER = "2021 Fall";
 
 	public static final int SLEEP_DURATION = 1000; // 1 second.
+	
+	/*
+	 * add student name string for testing addStudent
+	 */
+	
+	public static final String TEST_STUDENT_NAME = "test";
+	
+	public static final String TEST_STUDENT_EMAIL = "csumbtest@csumb.edu";
 
 	/*
 	 * When running in @SpringBootTest environment, database repositories can be used
@@ -60,6 +71,9 @@ public class EndToEndScheduleTest {
 
 	@Autowired
 	CourseRepository courseRepository;
+	
+	@Autowired
+	StudentRepository studentRepository;
 
 	/*
 	 * Student add course TEST_COURSE_ID to schedule for 2021 Fall semester.
@@ -88,7 +102,12 @@ public class EndToEndScheduleTest {
 		//@formatter:on
 
 		System.setProperty("webdriver.chrome.driver", CHROME_DRIVER_FILE_LOCATION);
-		WebDriver driver = new ChromeDriver();
+		ChromeOptions ops = new ChromeOptions();
+		ops.addArguments("--remote-allow-origins=*");	
+
+
+           WebDriver driver = new ChromeDriver(ops);
+	
 		// Puts an Implicit wait for 10 seconds before throwing exception
 		driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
 
@@ -151,7 +170,86 @@ public class EndToEndScheduleTest {
 				enrollmentRepository.delete(e);
 
 			driver.quit();
-		}
+		}	
 
+	}
+	@Test
+	public void addStudentTest() throws Exception {
+		/*
+		 * if student already exists, then delete the student.
+		 */
+
+		Student x = null;
+		do {
+			x = studentRepository.findByEmail(TEST_STUDENT_EMAIL);
+			if (x != null)
+				studentRepository.delete(x);
+		} while (x != null);
+		
+		System.setProperty("webdriver.chrome.driver", CHROME_DRIVER_FILE_LOCATION);
+		ChromeOptions ops = new ChromeOptions();
+		ops.addArguments("--remote-allow-origins=*");	
+
+
+           WebDriver driver = new ChromeDriver(ops);
+	
+		// Puts an Implicit wait for 10 seconds before throwing exception
+		driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
+
+		try {
+
+			driver.get(URL);
+			Thread.sleep(SLEEP_DURATION);
+
+
+			// Locate and click "Get Schedule" button
+			
+			driver.findElement(By.id("Add Student")).click();
+			Thread.sleep(SLEEP_DURATION);
+			
+			//fill in new student information: name and email
+			driver.findElement(By.id("Student Name")).sendKeys(TEST_STUDENT_NAME);
+			driver.findElement(By.id("Student Email")).sendKeys(TEST_STUDENT_EMAIL);
+			Thread.sleep(SLEEP_DURATION);
+			
+			//submit new student information
+			driver.findElement(By.id("Add")).click();
+			Thread.sleep(SLEEP_DURATION);
+
+			/*
+			* verify that new Student added to database.
+			* get the Student of all Students listed in repository
+			*/ 
+		
+			Student student = null;
+			
+			student = studentRepository.findByEmail(TEST_STUDENT_EMAIL);
+			
+			boolean works;
+			
+			if(student==null) {
+				 works = false;
+			}else {
+				works = true;
+			}
+				
+			assertTrue( works, "Student added successfully into system");
+			
+			// verify that enrollment row has been inserted to database.
+			
+			assertNotNull(student, "Student not found in database.");
+
+		} catch (Exception ex) {
+			throw ex;
+		} finally {
+
+			// clean up database.
+			
+			Student s = studentRepository.findByEmail(TEST_STUDENT_EMAIL);
+			if (s != null)
+				studentRepository.delete(s);
+
+			driver.quit();
+		}
 	}
 }

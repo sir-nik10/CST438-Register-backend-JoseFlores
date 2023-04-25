@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.cst438.domain.CourseDTOG;
+import com.cst438.domain.CourseRepository;
 import com.cst438.domain.Enrollment;
 import com.cst438.domain.EnrollmentRepository;
 
@@ -25,6 +26,16 @@ public class CourseController {
 	public void updateCourseGrades( @RequestBody CourseDTOG courseDTO, @PathVariable("course_id") int course_id) {
 		
 		//TODO  complete this method in homework 4
+		for(CourseDTOG.GradeDTO g : courseDTO.grades){
+			//for every student find the student in the enrollment repository 
+			Enrollment e = enrollmentRepository.findByEmailAndCourseId(g.student_email, course_id);
+			//set the grades
+			e.setCourseGrade(g.grade);
+			//save it and send it
+			enrollmentRepository.save(e);
+		}
+		
+		
 		
 	}
 
